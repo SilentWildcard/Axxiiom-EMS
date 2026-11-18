@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Axiom EMS deep-navy brand colors -->
+    <color name="colorPrimary">#0B1528</color>
+    <color name="colorPrimaryDark">#050B14</color>
+    <color name="colorAccent">#38BDF8</color>
+</resources>
