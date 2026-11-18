@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHardwareSimulator } from './useHardwareSimulator';
+import { useSimulator } from './SimulatorContext';
 import { SimulationTimeline } from './SimulationTimeline';
 import { InteractiveControlPanel } from './InteractiveControlPanel';
 import { PoliceDeskPanel } from './PoliceDeskPanel';
@@ -51,7 +51,7 @@ export const HardwareSimulationLab: React.FC = () => {
     signalCountdown,
     isAlertAudioPlaying,
     testSpeakerAudio,
-  } = useHardwareSimulator();
+  } = useSimulator();
 
   return (
     <div className="flex-1 flex flex-col p-4 md:p-6 gap-5 overflow-y-auto bg-[#070d18] text-slate-200 font-mono">

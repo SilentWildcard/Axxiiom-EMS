@@ -1,28 +1,25 @@
 import React, { useState } from 'react';
+import { SimulatorProvider, useSimulator } from './components/HardwareLab/SimulatorContext';
 import { HardwareSimulationLab } from './components/HardwareLab/HardwareSimulationLab';
 import { PoliceDeskPanel } from './components/HardwareLab/PoliceDeskPanel';
 import { DelhiCorridorMiniMap } from './components/HardwareLab/DelhiCorridorMiniMap';
 import { TelemetryConsole } from './components/HardwareLab/TelemetryConsole';
-import { useHardwareSimulator, DELHI_JUNCTIONS } from './components/HardwareLab/useHardwareSimulator';
+import { DELHI_JUNCTIONS } from './components/HardwareLab/useHardwareSimulator';
 import {
   Cpu,
   Shield,
   MapPin,
   Terminal,
   FileCode,
-  Radio,
-  ExternalLink,
   Github,
-  Zap,
-  Activity,
-  Layers
 } from 'lucide-react';
 
 type StandaloneView = 'lab' | 'police' | 'map' | 'telemetry' | 'firmware';
 
-export default function App() {
+/* Inner app — consumes the shared SimulatorContext */
+function AppInner() {
   const [activeView, setActiveView] = useState<StandaloneView>('lab');
-  const sim = useHardwareSimulator();
+  const sim = useSimulator();
 
   return (
     <div className="min-h-screen w-screen flex flex-col bg-[#070d18] text-slate-200 select-none font-mono">
@@ -66,13 +63,13 @@ export default function App() {
                 className={`px-3 py-1.5 rounded-md font-bold flex items-center gap-1.5 transition-all ${
                   isActive
                     ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                 }`}
               >
                 <Icon size={14} />
                 <span>{item.label}</span>
                 {item.badge && (
-                  <span className="text-[9px] px-1 py-0.2 rounded bg-black/40 text-cyan-200 font-normal">
+                  <span className="text-[9px] px-1 py-px rounded bg-black/40 text-cyan-200 font-normal">
                     {item.badge}
                   </span>
                 )}
@@ -206,26 +203,18 @@ export default function App() {
 
               {/* Pinout Specification Grid */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-                <div className="bg-[#080d1a] border border-slate-800 p-3 rounded-lg">
-                  <span className="text-cyan-400 font-bold block mb-1">GPIO 21 (OUTPUT)</span>
-                  <span className="text-white font-bold block">Relay K1 (Signal Actuation)</span>
-                  <span className="text-[10px] text-slate-400">3.3V Optocoupler Solid-State Driver</span>
-                </div>
-                <div className="bg-[#080d1a] border border-slate-800 p-3 rounded-lg">
-                  <span className="text-amber-400 font-bold block mb-1">GPIO 25/26/22 (I2S)</span>
-                  <span className="text-white font-bold block">MAX98357A Audio DAC</span>
-                  <span className="text-[10px] text-slate-400">BCLK, LRC, DOUT to Horn Siren</span>
-                </div>
-                <div className="bg-[#080d1a] border border-slate-800 p-3 rounded-lg">
-                  <span className="text-blue-400 font-bold block mb-1">GPIO 18/19 (ECHO/TRIG)</span>
-                  <span className="text-white font-bold block">HC-SR04 Transducers</span>
-                  <span className="text-[10px] text-slate-400">40kHz Pulse Time-of-Flight Queue Sensor</span>
-                </div>
-                <div className="bg-[#080d1a] border border-slate-800 p-3 rounded-lg">
-                  <span className="text-purple-400 font-bold block mb-1">UART2 (RX2/TX2)</span>
-                  <span className="text-white font-bold block">SIM7600 4G LTE Modem</span>
-                  <span className="text-[10px] text-slate-400">115200 Baud AT Command & MQTT Broker</span>
-                </div>
+                {[
+                  { color: 'text-cyan-400', pin: 'GPIO 21 (OUTPUT)', name: 'Relay K1 (Signal Actuation)', detail: '3.3V Optocoupler Solid-State Driver' },
+                  { color: 'text-amber-400', pin: 'GPIO 25/26/22 (I2S)', name: 'MAX98357A Audio DAC', detail: 'BCLK, LRC, DOUT to Horn Siren' },
+                  { color: 'text-blue-400', pin: 'GPIO 18/19 (ECHO/TRIG)', name: 'HC-SR04 Transducers', detail: '40kHz Pulse Time-of-Flight Queue Sensor' },
+                  { color: 'text-purple-400', pin: 'UART2 (RX2/TX2)', name: 'SIM7600 4G LTE Modem', detail: '115200 Baud AT Command & MQTT Broker' },
+                ].map(item => (
+                  <div key={item.pin} className="bg-[#080d1a] border border-slate-800 p-3 rounded-lg">
+                    <span className={`${item.color} font-bold block mb-1`}>{item.pin}</span>
+                    <span className="text-white font-bold block">{item.name}</span>
+                    <span className="text-[10px] text-slate-400">{item.detail}</span>
+                  </div>
+                ))}
               </div>
 
               {/* Firmware Code Block */}
@@ -298,9 +287,18 @@ void activateGreenWavePreemption(int etaSeconds) {
 
       {/* ── FOOTER ──────────────────────────────────────────────── */}
       <footer className="border-t border-slate-800/80 bg-[#070d18] px-4 py-2 text-[11px] text-slate-500 flex flex-wrap items-center justify-between">
-        <span>Axiom EMS • Hardware Digital Twin & IoT Infrastructure Simulator</span>
+        <span>Axiom EMS • Hardware Digital Twin &amp; IoT Infrastructure Simulator</span>
         <span>Independent GitHub Repository Deployment • All Telemetry Simulated Locally</span>
       </footer>
     </div>
+  );
+}
+
+/* Root export — wraps everything in the shared provider */
+export default function App() {
+  return (
+    <SimulatorProvider>
+      <AppInner />
+    </SimulatorProvider>
   );
 }
